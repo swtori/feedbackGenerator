@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Generator</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            background-image: url('https://example.com/background.jpg');
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            color: #333;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 90%;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .language-selector {
+            margin-bottom: 20px;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            background: white;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+
+        #phraseSelect {
+            height: 150px;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 5px;
+            margin: 15px 0;
+        }
+
+        .star {
+            font-size: 24px;
+            cursor: pointer;
+            color: #ddd;
+        }
+
+        .star.selected {
+            color: #ffd700;
+        }
+
+        #finalMessage {
+            white-space: pre-wrap;
+            background: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border: 1px solid #dee2e6;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            margin: 10px 0;
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+    <div class="language-selector">
+        <select id="language">
+            <option value="fr">Français</option>
+            <option value="en">English</option>
+        </select>
+    </div>
+
+    <div class="container">
+        <h1 id="title">Feedback for the Lusciana Team</h1>
+
+        <div id="phraseSection">
+            <h3 id="phraseTitle">Suggested phrases:</h3>
+            <select id="phraseSelect" multiple size="5"></select>
+        </div>
+
+        <div id="messageSection">
+            <h3 id="messageTitle">Your message:</h3>
+            <textarea id="message" rows="4"></textarea>
+        </div>
+
+        <div id="ratingSection">
+            <h3 id="ratingTitle">Rating:</h3>
+            <div class="star-rating" id="starRating"></div>
+        </div>
+
+        <button onclick="generateFeedback()" id="generateBtn">Generate</button>
+
+        <div id="result" style="display: none;">
+            <h3 id="finalTitle">Your feedback:</h3>
+            <div id="finalMessage"></div>
+            <button onclick="copyFeedback()" id="copyBtn">Copy</button>
+        </div>
+    </div>
+
+    <script>
+        const translations = {
+            fr: {
+                title: "**Retour pour l'équipe Lusciana**",
+                phrases: [
+                    "Voici mon opinion sur la commission effectuée par l’équipe.",
+                    "J’aimerais partager mon avis sur le build réalisé par Lusciana.",
+                    "Voici ce que je pense du projet que vous avez livré.",
+                    "Mon retour sur l’excellent travail de votre équipe.",
+                    "Quelques mots sur la commission que vous avez complétée.",
+                    "Je voulais exprimer mon avis sur le dernier build.",
+                    "Voici ce que j’ai à dire sur le travail que vous avez fait.",
+                    "Mon avis sur la création que votre équipe a réalisée.",
+                    "Je partage mon opinion sur le build que vous avez terminé.",
+                    "Un rapide retour sur le projet complété par Lusciana.",
+                ],
+                messageTitle: "Votre message:",
+                ratingTitle: "Note:",
+                generateBtn: "Générer",
+                finalTitle: "Votre feedback:",
+                copyBtn: "Copier"
+            },
+            en: {
+                title: "**Feedback for the Lusciana Team**",
+                phrases: [
+                    "Here’s my opinion on the commission completed by the team.",
+                    "I’d like to share my thoughts on the build done by Lusciana.",
+                    "Here’s what I think about the project you delivered.",
+                    "My feedback on the amazing work from your team.",
+                    "A few words about the commission you completed.",
+                    "I wanted to express my thoughts on the latest build.",
+                    "Here’s what I have to say about the work you did.",
+                    "My thoughts on the creation your team put together.",
+                    "Sharing my opinion on the build you finished.",
+                    "A quick review of the project Lusciana completed.",
+                ],
+                messageTitle: "Your message:",
+                ratingTitle: "Rating:",
+                generateBtn: "Generate",
+                finalTitle: "Your feedback:",
+                copyBtn: "Copy"
+            }
+        };
+
+        let currentLang = 'fr';
+        let rating = 0;
+
+        document.getElementById('language').addEventListener('change', (e) => {
+            currentLang = e.target.value;
+            updateLanguage();
+        });
+
+        function updateLanguage() {
+            const trans = translations[currentLang];
+            document.getElementById('title').textContent = trans.title;
+            document.getElementById('phraseTitle').textContent = currentLang === 'fr' ? "Phrases suggérées:" : "Suggested phrases:";
+            document.getElementById('messageTitle').textContent = trans.messageTitle;
+            document.getElementById('ratingTitle').textContent = trans.ratingTitle;
+            document.getElementById('generateBtn').textContent = trans.generateBtn;
+            document.getElementById('finalTitle').textContent = trans.finalTitle;
+            document.getElementById('copyBtn').textContent = trans.copyBtn;
+
+            const phraseSelect = document.getElementById('phraseSelect');
+            phraseSelect.innerHTML = '';
+            trans.phrases.forEach(phrase => {
+                const option = document.createElement('option');
+                option.value = phrase;
+                option.textContent = phrase;
+                phraseSelect.appendChild(option);
+            });
+
+            const starRating = document.getElementById('starRating');
+            starRating.innerHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                const star = document.createElement('span');
+                star.className = 'star';
+                star.innerHTML = '★';
+                star.onclick = () => setRating(i);
+                starRating.appendChild(star);
+            }
+        }
+
+        function setRating(num) {
+            rating = num;
+            document.querySelectorAll('.star').forEach((star, index) => {
+                star.classList.toggle('selected', index < num);
+            });
+        }
+
+        function generateFeedback() {
+            const phrases = Array.from(document.getElementById('phraseSelect').selectedOptions)
+                                .map(option => option.value);
+            const message = document.getElementById('message').value;
+            const trans = translations[currentLang];
+            
+            let finalText = `${trans.title}\n\n`;
+            finalText += phrases.join('\n') + '\n\n';
+            finalText += `${message}\n\n`;
+            finalText += '⭐'.repeat(rating) + ` (${rating}/5)`;
+
+            document.getElementById('finalMessage').textContent = finalText;
+            document.getElementById('result').style.display = 'block';
+        }
+
+        function copyFeedback() {
+            const text = document.getElementById('finalMessage').textContent;
+            navigator.clipboard.writeText(text);
+            alert(currentLang === 'fr' ? "Copié !" : "Copied!");
+        }
+
+        updateLanguage();
+        setRating(0);
+    </script>
+</body>
+</html>
