@@ -2,175 +2,239 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Minecraft Build Service</title>
-    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Generator</title>
     <style>
         body {
-            font-family: 'Comic Neue', cursive;
             margin: 0;
             padding: 20px;
-            background: #f0f0f0;
-        }
-
-        .sketch-box {
-            border: 3px solid #333;
-            border-radius: 8px;
-            padding: 10px;
-            margin: 10px;
-            box-shadow: 4px 4px 0 #00000033;
-            background: white;
-            position: relative;
-        }
-
-        .hand-drawn {
-            border: 2px dashed #666;
-            border-radius: 5px;
-            padding: 8px;
-            font-size: 1.2em;
-        }
-
-        .container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .size-container {
+            min-height: 100vh;
+            background-image: url('https://example.com/background.jpg');
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        #buildSize {
-            width: 120px;
-            padding: 12px;
-            font-size: 1.4em;
-            text-align: center;
-        }
-
-        .size-suffix {
-            font-size: 1.4em;
-            font-weight: bold;
+            position: relative;
             color: #333;
         }
 
-        .price-display {
-            font-size: 2.5em;
-            color: #2ecc71;
-            margin: 20px 0;
-            text-align: center;
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: -1;
         }
 
-        .disclaimer {
-            font-size: 0.9em;
-            color: #666;
-            line-height: 1.5;
+        .container {
+            max-width: 600px;
+            width: 90%;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
         }
 
-        .language-box {
-            max-width: 800px;
-            margin: 0 auto 20px;
-            padding: 12px 20px;
+        .language-selector {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
         .lang-btn {
             padding: 5px 15px;
-            border: 2px solid #333;
-            background: white;
-            cursor: pointer;
-            font-size: 1em;
+            border: 2px solid #ccc;
             border-radius: 5px;
-            transition: all 0.2s;
+            background: #f0f0f0;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+            transition: all 0.3s ease;
         }
 
         .lang-btn.active {
-            background: #333;
+            background: #007bff;
+            border-color: #007bff;
             color: white;
         }
 
-        .language-label {
-            font-weight: 700;
-            margin-right: 10px;
+        .star-rating {
+            display: flex;
+            gap: 5px;
+            margin: 15px 0;
+        }
+
+        .star {
+            font-size: 24px;
+            cursor: pointer;
+            color: #ddd;
+        }
+
+        .star.selected {
+            color: #ffd700;
+        }
+
+        #finalMessage {
+            white-space: pre-wrap;
+            background: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border: 1px solid #dee2e6;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            margin: 10px 0;
+            min-height: 100px;
+        }
+
+        .discord-message {
+            font-size: 0.9em;
+            margin-top: 10px;
+            color: #666;
+            white-space: pre-wrap;
         }
     </style>
 </head>
 <body>
-    <div class="sketch-box language-box">
-        <span class="language-label" data-i18n="your_language">Votre langue :</span>
-        <button class="lang-btn active" data-lang="fr">FR</button>
-        <button class="lang-btn" data-lang="en">EN</button>
-    </div>
-
+    <div class="overlay"></div>
+    
     <div class="container">
-        <section class="sketch-box">
-            <h2 data-i18n="price_estimation">Estimation de prix</h2>
-            <div class="size-container">
-                <input type="number" id="buildSize" class="hand-drawn" 
-                       min="1" value="50" oninput="updatePrice(this)">
-                <span class="size-suffix">x50 <span>blocks</span></span>
-            </div>
-            <div class="price-display">$<span id="price">25</span></div>
-        </section>
+        <div class="language-selector">
+            <span id="languageLabel">Choisissez votre langue :</span>
+            <button class="lang-btn active" id="frBtn">FR</button>
+            <button class="lang-btn" id="enBtn">ANG</button>
+        </div>
 
-        <section class="sketch-box">
-            <h2 data-i18n="disclaimer_title">⚠️ Important</h2>
-            <div class="disclaimer" data-i18n="disclaimer">
-                Cette estimation est indicative et peut varier selon la complexité réelle du projet. 
-                Le prix final sera confirmé après analyse détaillée. Les grandes constructions peuvent 
-                nécessiter une évaluation supplémentaire.
-            </div>
-        </section>
+        <h1 id="title">Feedback pour l'équipe Lusciana</h1>
+
+        <div id="messageSection">
+            <h3 id="messageTitle">Votre message :</h3>
+            <textarea id="message" rows="4"></textarea>
+        </div>
+
+        <div id="ratingSection">
+            <h3 id="ratingTitle">Note :</h3>
+            <div class="star-rating" id="starRating"></div>
+        </div>
+
+        <button onclick="generateFeedback()" id="generateBtn">Générer</button>
+
+        <div id="result" style="display: none;">
+            <h3 id="finalTitle">Votre feedback :</h3>
+            <div id="finalMessage"></div>
+            <button onclick="copyFeedback()" id="copyBtn">Copier</button>
+            <div id="discordMessage" class="discord-message"></div>
+        </div>
     </div>
 
     <script>
-        // Calcul dynamique du prix
-        function updatePrice(input) {
-            const size = parseInt(input.value) || 0;
-            const basePrice = size * 0.5;
-            document.getElementById('price').textContent = Math.round(basePrice);
-            document.querySelector('.size-suffix').innerHTML = `x${size} <span>blocks</span>`;
-        }
-
-        // Système de traduction
         const translations = {
             fr: {
-                your_language: "Votre langue :",
-                price_estimation: "Estimation de prix",
-                disclaimer_title: "⚠️ Important",
-                disclaimer: "Cette estimation est indicative et peut varier selon la complexité réelle du projet. Le prix final sera confirmé après analyse détaillée. Les grandes constructions peuvent nécessiter une évaluation supplémentaire."
+                languageLabel: "Choisissez votre langue :",
+                title: "**Retour pour l'équipe Lusciana**",
+                messageTitle: "Votre message :",
+                ratingTitle: "Note :",
+                generateBtn: "Générer",
+                finalTitle: "Votre feedback :",
+                copyBtn: "Copier",
+                discordMessage: "Sur le Discord, envoyez le texte copié sur #customer-feedback"
             },
             en: {
-                your_language: "Your language:",
-                price_estimation: "Price Estimation",
-                disclaimer_title: "⚠️ Important",
-                disclaimer: "This estimate is indicative and may vary based on actual project complexity. Final price will be confirmed after detailed analysis. Large builds may require additional evaluation."
+                languageLabel: "Choose your language:",
+                title: "**Feedback for the Lusciana Team**",
+                messageTitle: "Your message:",
+                ratingTitle: "Rating:",
+                generateBtn: "Generate",
+                finalTitle: "Your feedback:",
+                copyBtn: "Copy",
+                discordMessage: "On Discord, send the copied text to #customer-feedback"
             }
         };
 
-        // Changement de langue
-        document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                translatePage(this.dataset.lang);
-            });
-        });
+        let currentLang = 'fr';
+        let rating = 0;
 
-        function translatePage(lang) {
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.dataset.i18n;
-                el.textContent = translations[lang][key];
+        document.getElementById('frBtn').addEventListener('click', () => setLanguage('fr'));
+        document.getElementById('enBtn').addEventListener('click', () => setLanguage('en'));
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(lang === 'fr' ? 'frBtn' : 'enBtn').classList.add('active');
+            updateLanguage();
+        }
+
+        function updateLanguage() {
+            const trans = translations[currentLang];
+            document.getElementById('languageLabel').textContent = trans.languageLabel;
+            document.getElementById('title').textContent = trans.title;
+            document.getElementById('messageTitle').textContent = trans.messageTitle;
+            document.getElementById('ratingTitle').textContent = trans.ratingTitle;
+            document.getElementById('generateBtn').textContent = trans.generateBtn;
+            document.getElementById('finalTitle').textContent = trans.finalTitle;
+            document.getElementById('copyBtn').textContent = trans.copyBtn;
+            document.getElementById('discordMessage').textContent = trans.discordMessage;
+
+            const starRating = document.getElementById('starRating');
+            starRating.innerHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                const star = document.createElement('span');
+                star.className = 'star';
+                star.innerHTML = '★';
+                star.onclick = () => setRating(i);
+                starRating.appendChild(star);
+            }
+        }
+
+        function setRating(num) {
+            rating = num;
+            document.querySelectorAll('.star').forEach((star, index) => {
+                star.classList.toggle('selected', index < num);
             });
         }
 
-        // Initialisation
-        updatePrice(document.getElementById('buildSize'));
+        function generateFeedback() {
+            const message = document.getElementById('message').value;
+            const trans = translations[currentLang];
+            
+            let finalText = `${trans.title}\n\n`;
+            finalText += `${message}\n\n`;
+            finalText += '⭐'.repeat(rating) + ` (${rating}/5)`;
+
+            document.getElementById('finalMessage').textContent = finalText;
+            document.getElementById('result').style.display = 'block';
+        }
+
+        function copyFeedback() {
+            const text = document.getElementById('finalMessage').textContent;
+            navigator.clipboard.writeText(text);
+            alert(currentLang === 'fr' ? "Copié !" : "Copied!");
+        }
+
+        updateLanguage();
+        setRating(0);
     </script>
 </body>
 </html>
